@@ -1,4 +1,5 @@
 from itertools import product, combinations
+import pysat
 from pysat.solvers import Glucose3
 
 '''
@@ -208,10 +209,29 @@ def iset_bfs_3_coloring(G):
 # Given an instance of the Graph class G, reduces 3 coloring to SAT
 # If successful, modifies G.colors and returns the coloring.
 # If no coloring is possible, resets all of G's colors to None and returns None.
+
+
 def sat_3_coloring(G):
     solver = Glucose3()
 
-    # TODO: Add the clauses to the solver
+    def vertex_value_color(v, c):
+        return ((3 * v) + c)
+
+    for vert in range(len(G.edges)):
+
+        # Every vertex has a color
+        solver.add_clause([vertex_value_color(vert, 1), vertex_value_color(vert, 2), vertex_value_color(vert, 3)])
+        # All vertices must be assigned at most 1 color
+        solver.add_clause([-vertex_value_color(vert, 1), -vertex_value_color(vert, 2)])
+        solver.add_clause([-vertex_value_color(vert, 1), -vertex_value_color(vert, 3)])
+        solver.add_clause([-vertex_value_color(vert, 2), -vertex_value_color(vert, 3)])
+
+    # Endpoints of an edge cannot have same color
+    for u in range(len(G.edges)):
+        for v in G.edges[u]:
+            print
+            for color in [1,2,3]:
+                solver.add_clause([-vertex_value_color(u, color), -vertex_value_color(v, color)])
 
     # Attempt to solve, return None if no solution possible
     if not solver.solve():
@@ -221,7 +241,10 @@ def sat_3_coloring(G):
     # Accesses the model in form [-v1, v2, -v3 ...], which denotes v1 = False, v2 = True, v3 = False, etc.
     solution = solver.get_model()
 
-    # TODO: If a solution is found, convert it into a coloring and update G.colors
+    for val in solution:
+        if val > 0:
+            vertex = (val - 1) // 3
+            G.colors[vertex] = (val - 1) % 3 + 1
 
     return G.colors
 

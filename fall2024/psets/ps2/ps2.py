@@ -53,17 +53,21 @@ class BinarySearchTree:
     returns BinarySearchTree/Node or None
     '''
     def select(self, ind):
+        if ind < 0 or ind >= self.size:
+            return None
         left_size = 0
         if self.left is not None:
             left_size = self.left.size
         if ind == left_size:
             return self
-        if left_size > ind and self.left is not None:
+        if ind >= self.size:
+            return None
+        if left_size > ind:
             return self.left.select(ind)
         if left_size < ind and self.right is not None:
-            return self.right.select(ind)
+            return self.right.select(ind - left_size - 1)
         return None
-
+    
 
     '''
     Searches for a given key
@@ -91,6 +95,7 @@ class BinarySearchTree:
     def insert(self, key):
         if self.key is None:
             self.key = key
+            self._size = 1
         elif self.key > key: 
             if self.left is None:
                 self.left = BinarySearchTree(self.debugger)
@@ -99,9 +104,8 @@ class BinarySearchTree:
             if self.right is None:
                 self.right = BinarySearchTree(self.debugger)
             self.right.insert(key)
-        self.calculate_sizes()
+        self._size = 1 + (self.left.size if self.left else 0) + (self.right.size if self.right else 0)
         return self
-
     
     ####### Part b #######
 
@@ -127,7 +131,54 @@ class BinarySearchTree:
        11 
     '''
     def rotate(self, direction, child_side):
-        # Your code goes here
+        # set a child variable
+        if child_side == "L":
+            child = self.left
+        elif child_side == "R":
+            child = self.right
+        else:
+            return self  # Invalid child side, return the current node
+
+        # Left rotation
+        if direction == "L":
+            if child is not None and child.right is not None:
+                new_root = child.right
+                child.right = new_root.left
+                if new_root.left:
+                    new_root.left.parent = child
+                new_root.left = child
+                
+                # Update sizes
+                child.size = 1 + (child.left.size if child.left else 0) + (child.right.size if child.right else 0)
+                new_root.size = 1 + (new_root.left.size if new_root.left else 0) + (new_root.right.size if new_root.right else 0)
+                
+                # Update root pointers 
+                if child_side == "L":
+                    self.left = new_root
+                else:
+                    self.right = new_root
+
+        # Right rotation
+        elif direction == "R":
+            # Perform right rotation on the identified child
+            if child is not None and child.left is not None:
+                new_root = child.left
+                child.left = new_root.right
+                if new_root.right:
+                    new_root.right.parent = child
+                new_root.right = child
+                
+                # Update sizes
+                child.size = 1 + (child.left.size if child.left else 0) + (child.right.size if child.right else 0)
+                new_root.size = 1 + (new_root.left.size if new_root.left else 0) + (new_root.right.size if new_root.right else 0)
+                
+                # Update root pointers 
+                if child_side == "L":
+                    self.left = new_root
+                else:
+                    self.right = new_root
+        
+        # Return updated tree/subtree
         return self
 
     def print_bst(self):

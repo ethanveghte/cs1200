@@ -31,12 +31,30 @@ returns: An key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
 
 
 def QuickSelect(arr, i):
-    # Your code here
+    #check if the array is empty
+    if len(arr) == 0:  
+        return None
+    #base case
+    if len(arr) == 1:
+        return arr[0]
+    #get pivot arrays
+    p = get_random_index(arr)
 
-    # Feel free to use get_random_index(arr) or get_random_int(start_inclusive, end_inclusive)
-    # ... see the helper functions below
-    pass
-    return (0, -1)
+    a_small = [x for x in arr if x < arr[p]]
+    a_large = [x for x in arr if x > arr[p]]
+    a_equal = [x for x in arr if x == arr[p]]
+
+    #find lengths 
+    n_small = len(a_small)
+    n_equal = len(a_equal)
+
+    #check array lengths with i
+    if i < n_small:
+        return QuickSelect(a_small, i)
+    elif i >= n_small + n_equal:
+        return QuickSelect(a_large, i - n_small - n_equal)
+    else:
+        return a_equal[0]
 
 
 '''
@@ -52,10 +70,14 @@ NOTE: This is different from the QuickSelect definition. This function takes in 
 
 
 def MergeSortSelect(arr, query_list):
-    # Only call MergeSort once
-    # ... MergeSort has already been implemented for you (see below)
-    pass
-    return [(0, -1)] * len(query_list)  # replace this line with your return
+    s_arr = MergeSort(arr)
+    result = []
+    ds_arr = sorted(set(s_arr))
+    for q in query_list:
+        if q < 0 or q >= len(ds_arr):
+            raise IndexError("Query index out of range.")
+        result.append(ds_arr[q])
+    return result
 
 
 ##################################
@@ -67,7 +89,7 @@ def MergeSortSelect(arr, query_list):
 
 def experiments():
     # Edit this parameter
-    k = [1, 1, 1, 1, 1]
+    k = [10, 25, 27, 30, 40]
 
     # Feel free to edit these initial parameters
 

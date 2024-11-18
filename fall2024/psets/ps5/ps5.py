@@ -157,6 +157,7 @@ def bfs_2_coloring(G, precolored_nodes=None):
     visited = set()
     G.reset_colors()
     preset_color = 2
+
     if precolored_nodes is not None:
         for node in precolored_nodes:
             G.colors[node] = preset_color
@@ -165,13 +166,37 @@ def bfs_2_coloring(G, precolored_nodes=None):
         if len(precolored_nodes) == G.N:
             return G.colors
     
-    # TODO: Complete this function by implementing two-coloring using the colors 0 and 1.
-    # If there is no valid coloring, reset all the colors to None using G.reset_colors()
-    
-    G.reset_colors()
-    return None
+    #choose arbitrary start find all edges and nodes
+    # loop through nodes in G.N, removing nodes as you go. 
+    for visit in range(G.N):
+        # can't be in visited set
+        if visit not in visited:
+            # Add to frontier
+            G.colors[visit] = 0
+            Front = {visit}
+            visited.add(visit)
 
-
+            # While there is still something in frontier 
+            # (if there is, there is more to explore)
+            while Front:
+                next = set()
+                for F in Front:
+                    # Go down all the edges to find neighbors of current node
+                    for neighbor in G.edges[F]:
+                        # check if visited
+                        if neighbor not in visited:
+                            # use opposite color in neighbor than is in current
+                            G.colors[neighbor] = 1 - G.colors[F]
+                            visited.add(neighbor)
+                            next.add(neighbor)
+                        # invalid coloring case
+                        elif G.colors[neighbor] == G.colors[F]:
+                            G.reset_colors()
+                            return None
+                # move onto next batch (next step distance away from start)
+                Front = next
+                    
+    return G.colors
 
 '''
     Part B: Implement the 3-coloring algorithm using the Bron-Kerbosch algorithm and BFS.
@@ -186,8 +211,16 @@ def bfs_2_coloring(G, precolored_nodes=None):
 # If successful, modifies G.colors and returns the coloring.
 # If no coloring is possible, resets all of G's colors to None and returns None.
 def iset_bfs_3_coloring(G):
-    # TODO: Complete this function.
-
+    # go through maximal independent sets
+    for ind in get_maximal_isets(G):
+        # reset colors from possibly previous iterations
+        G.reset_colors()
+        # try 2 coloring it with left over graph after set is removed 
+        # bfs_2_coloring removes the independent set if they are set as precolored_nodes
+        output = bfs_2_coloring(G, precolored_nodes=ind)
+        if output is not None:
+            return G.colors
+    # else no valid coloring
     G.reset_colors()
     return None
 
